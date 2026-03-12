@@ -14,6 +14,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
       - name: Enable Gradle cache
         uses: actions/cache@v4
         with:
@@ -22,22 +30,14 @@ jobs:
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-
-      - name: Build Docker image
-        run: docker build -t face-recog .
-
-      - name: Build APK inside container
+      - name: Build APK
         run: |
-          docker run --rm \
-          -v ${{ github.workspace }}:/workspace \
-          -w /workspace \
-          face-recog \
+          cd android
+          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
