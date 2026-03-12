@@ -8,10 +8,24 @@ const CameraScreen = () => {
   const devices = useCameraDevices()
   const device = devices.back
   const camera = useRef<Camera>(null)
+  
+  const [permission, setPermission] = useState(false)
 
   useEffect(() => {
-    Camera.requestCameraPermission()
+    const getPermission = async () => {
+      const status = await Camera.requestCameraPermission()
+      setPermission(status === 'granted')
+    }
+    getPermission()
   }, [])
+  
+  if (!permission) {
+    return <Text>Camera permission required</Text>
+  }
+  
+  if (device == null) {
+    return <Text>Loading camera...</Text>
+  }
 
   const sendToAWS = async (base64: string) => {
 
