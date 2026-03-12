@@ -20,14 +20,8 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Cache node modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: node-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Enable Gradle cache
         uses: actions/cache@v4
@@ -41,7 +35,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew clean assembleRelease
+          ./gradlew clean assembleRelease --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

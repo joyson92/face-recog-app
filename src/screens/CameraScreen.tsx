@@ -1,5 +1,5 @@
-import React, {useRef, useEffect} from 'react'
-import {View, Button, StyleSheet} from 'react-native'
+import React, {useRef, useEffect, useState} from 'react'
+import {View, Button, StyleSheet, Text} from 'react-native'
 import {Camera, useCameraDevices} from 'react-native-vision-camera'
 import RNFS from 'react-native-fs'
 
@@ -66,7 +66,6 @@ const CameraScreen = () => {
 
   }
 
-  if (device == null) return null
 
   return (
     <View style={{flex:1}}>
