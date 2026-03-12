@@ -1,20 +1,11 @@
-FROM reactnativecommunity/react-native-android
+FROM openjdk:17-jdk-slim
 
-WORKDIR /app
+ENV ANDROID_SDK_ROOT=/sdk
+ENV PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
 
-# Copy only package files first (better caching)
-COPY package.json package-lock.json ./
+RUN apt-get update && apt-get install -y \
+    wget unzip git
 
-RUN npm install
+RUN mkdir -p $ANDROID_SDK_ROOT
 
-# Copy rest of project
-COPY . .
-
-WORKDIR /app/android
-
-RUN chmod +x gradlew
-
-# Clean previous builds
-RUN ./gradlew clean
-
-RUN ./gradlew assembleRelease
+WORKDIR /workspace
