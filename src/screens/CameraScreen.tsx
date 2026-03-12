@@ -1,31 +1,8 @@
-import React, {useRef, useEffect, useState} from 'react'
-import {View, Button, StyleSheet, Text} from 'react-native'
-import {Camera, useCameraDevices} from 'react-native-vision-camera'
-import RNFS from 'react-native-fs'
+import React from 'react'
+import {View, Button, Alert} from 'react-native'
+import {launchCamera} from 'react-native-image-picker'
 
 const CameraScreen = () => {
-
-  const devices = useCameraDevices()
-  const device = devices.back
-  const camera = useRef<Camera>(null)
-  
-  const [permission, setPermission] = useState(false)
-
-  useEffect(() => {
-    const getPermission = async () => {
-      const status = await Camera.requestCameraPermission()
-      setPermission(status === 'granted')
-    }
-    getPermission()
-  }, [])
-  
-  if (!permission) {
-    return <Text>Camera permission required</Text>
-  }
-  
-  if (device == null) {
-    return <Text>Loading camera...</Text>
-  }
 
   const sendToAWS = async (base64: string) => {
 
@@ -48,38 +25,50 @@ const CameraScreen = () => {
 
       console.log("AWS Response:", data)
 
+      Alert.alert("Response", JSON.stringify(data))
+
     } catch (error) {
       console.error(error)
     }
-
   }
 
-  const takePhoto = async () => {
+  const openCamera = () => {
 
-    if (!camera.current) return
+    launchCamera(
+      {
+        mediaType: 'photo',
+        includeBase64: true,
+		maxWidth:800,
+		maxHeight:800,
+        cameraType: 'back',
+        quality: 0.7
+      },
+      (response) => {
 
-    const photo = await camera.current.takePhoto()
+        if (response.didCancel) {
+          console.log('User cancelled camera')
+          return
+        }
 
-    const base64 = await RNFS.readFile(photo.path, 'base64')
+        if (response.errorCode) {
+          console.log('Camera Error: ', response.errorMessage)
+          return
+        }
 
-    await sendToAWS(base64)
+        const base64 = response.assets?.[0]?.base64
 
+        if (base64) {
+          console.log("Base64 length:", base64.length)
+          sendToAWS(base64)
+        }
+
+      }
+    )
   }
-
 
   return (
-    <View style={{flex:1}}>
-
-      <Camera
-        ref={camera}
-        style={StyleSheet.absoluteFill}
-        device={device}
-        isActive={true}
-        photo={true}
-      />
-
-      <Button title="Capture" onPress={takePhoto} />
-
+    <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
+      <Button title="Open Camera" onPress={openCamera}/>
     </View>
   )
 }
