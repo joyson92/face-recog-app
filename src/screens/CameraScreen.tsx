@@ -30,26 +30,52 @@ const ClockInScreen: React.FC = () => {
     requestPermissions();
   }, []);
 
-  const requestPermissions = async (): Promise<void> => {
-    try {
-      let cameraGranted = true;
+  const checkCameraPermission = async () => {
+    if (Platform.OS === 'android') {
+      const status = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.CAMERA
+      );
+      return status;
+    }
+    return true; // iOS handled differently
+  };
 
-      if (Platform.OS === 'android') {
-        const cameraPermission = await PermissionsAndroid.request(
+  const checkLocationPermission = async () => {
+    if (Platform.OS === 'android') {
+      const fine = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      );
+      return fine;
+    }
+    return true;
+  };
+
+  const requestPermissions = async () => {
+    try {
+      let cameraGranted = await checkCameraPermission();
+      if (!cameraGranted) {
+        const cameraResult = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA
         );
-        cameraGranted = cameraPermission === PermissionsAndroid.RESULTS.GRANTED;
+        cameraGranted = cameraResult === PermissionsAndroid.RESULTS.GRANTED;
       }
 
-      const locationPermission = await Geolocation.requestAuthorization('whenInUse');
+      let locationGranted = await checkLocationPermission();
+      if (!locationGranted) {
+        const locationResult = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+        locationGranted = locationResult === PermissionsAndroid.RESULTS.GRANTED;
+      }
 
-      if (cameraGranted && locationPermission === 'granted') {
-        setHasPermission(true);
+      if (cameraGranted && locationGranted) {
+        setHasPermission(true); // ✅ Now it will properly update
       } else {
         Alert.alert('Permission required');
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", String(err));
     }
   };
 
