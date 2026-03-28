@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 60,
+    bottom: 30,
     alignSelf: 'center',
     backgroundColor: '#ff6b2d',
     width: 60,
@@ -246,6 +246,12 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 10,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   bottomNav: {
     height: 60,
@@ -253,11 +259,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
   },
   navText: {
     color: '#fff',
   },
   navItem: {
-  alignItems: 'center',
-},
+    alignItems: 'center',
+  },
 });
