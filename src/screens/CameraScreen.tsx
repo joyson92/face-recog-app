@@ -216,17 +216,54 @@ const CameraScreen: React.FC = () => {
         >
           <Text style={styles.date}>{formattedDate}</Text>
           <Text style={styles.greeting}>{getGreeting()}</Text>
-          <Feather name="home" size={30} color="red" />
         </LinearGradient>
 
         {/* IMAGE PREVIEW (40% screen) */}
-        <View style={styles.previewContainer}>
-          {photo && (
+        <TouchableOpacity
+          style={styles.previewContainer}
+          onPress={handleClockIn}
+          activeOpacity={0.8}
+        >
+          {photo ? (
             <Image
               source={{ uri: `data:image/jpeg;base64,${photo}` }}
               style={styles.previewImage}
             />
+          ) : (
+            <View style={styles.placeholderContainer}>
+              <Feather name="camera" size={40} color="#ccc" />
+              <Text style={styles.placeholderText}>No Image Captured</Text>
+              <Text style={styles.ctaText}>
+                Tap to capture
+              </Text>
+            </View>
           )}
+        </TouchableOpacity>
+
+        {/* EMPLOYEE INFO */}
+        {/* EMPLOYEE INFO */}
+        <View style={styles.employeeContainer}>
+
+          {/* NAME */}
+          <View style={styles.infoRow}>
+            <Feather name="user" size={16} color="#ff6b2d" />
+            <Text style={styles.employeeName}>Joyson</Text>
+          </View>
+
+          {/* ID */}
+          <View style={styles.infoRow}>
+            <Feather name="hash" size={16} color="#ff6b2d" />
+            <Text style={styles.employeeId}>E0001</Text>
+          </View>
+
+          {/* WORK HOURS */}
+          <View style={styles.workHoursBox}>
+            <Feather name="clock" size={14} color="#ff6b2d" />
+            <Text style={styles.workHoursText}>
+              8hrs 20mins
+            </Text>
+          </View>
+
         </View>
 
         {/* LOCATION DETAILS */}
@@ -258,7 +295,10 @@ const CameraScreen: React.FC = () => {
 
           {/* CHECK OUT */}
           <View style={styles.timeBox}>
-            <Text style={styles.timeLabel}>Check Out</Text>
+            <View style={styles.labelContainer}>
+              <Feather name="clock" size={12} color="#ff6b2d" />
+              <Text style={styles.timeLabelText}>Check Out</Text>
+            </View>
             <Text style={styles.timeValue}>--:--</Text>
           </View>
 
@@ -275,7 +315,7 @@ const CameraScreen: React.FC = () => {
       </TouchableOpacity>
 
       {/* BOTTOM NAV */}
-      <View style={[styles.bottomNav, { paddingBottom: insets.bottom > 0 ? insets.bottom : 10 }]}>
+      <View style={[styles.bottomNav, { height: 60 + insets.bottom, paddingBottom: insets.bottom }]}>
         {/* <NavItem icon="home" label="Home" />
             <NavItem icon="calendar" label="Calendar" />
             <NavItem icon="credit-card" label="Wallet" />
@@ -288,6 +328,69 @@ const CameraScreen: React.FC = () => {
 export default CameraScreen;
 
 const styles = StyleSheet.create({
+  ctaText: {
+    color: '#ff6b2d',
+    marginTop: 6,
+    fontWeight: '600',
+  },
+  placeholderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    backgroundColor: '#fafafa'
+  },
+
+  placeholderText: {
+    marginTop: 10,
+    color: '#999',
+    fontSize: 14,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+
+  employeeName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginLeft: 8,
+  },
+
+  employeeId: {
+    fontSize: 14,
+    color: '#777',
+    marginLeft: 8,
+  },
+  employeeContainer: {
+    width: '80%',
+    alignSelf: 'center',
+    marginTop: 20,
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  workHoursBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    backgroundColor: '#fff5ef',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+
+  workHoursText: {
+    marginLeft: 6,
+    color: '#ff6b2d',
+    fontWeight: '500',
+  },
   labelContainer: {
     position: 'absolute',
     top: -10,
@@ -476,6 +579,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     position: 'absolute',
+    bottom: 0,
     left: 0,
     right: 0,
     zIndex: 1,
