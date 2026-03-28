@@ -306,7 +306,7 @@ const CameraScreen: React.FC = () => {
       </ScrollView>
 
       {/* FLOATING BUTTON */}
-      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 60 + 10 }]} onPress={handleClockIn}>
+      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 10 }]} onPress={handleClockIn}>
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
