@@ -161,12 +161,16 @@ const CameraScreen: React.FC = () => {
         'https://uqm06v0voe.execute-api.us-east-1.amazonaws.com/soc/ta',
         payload
       );
-      Alert.alert(
-        'Success',
-        `Status: ${response.status}\nMessage: ${JSON.stringify(response.data)}`
-      );
+      if (response.status === 200) {
+        Alert.alert('Success', 'Clock-in recorded!');
 
-      Alert.alert('Success', 'Clock-in recorded!');
+        setTimeout(() => {
+          setPhoto(null);
+          setLocation(null);
+        }, 5000);
+      } else {
+        Alert.alert('Error', 'Failed to record!');
+      }
     } catch (error) {
       Alert.alert('Error', String(error));
     } finally {
@@ -186,6 +190,21 @@ const CameraScreen: React.FC = () => {
   }
 
   const insets = useSafeAreaInsets();
+  const now = new Date();
+
+  const formattedDate = now.toLocaleDateString('en-IN', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const getGreeting = () => {
+    const hour = now.getHours();
+
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}>
@@ -195,8 +214,8 @@ const CameraScreen: React.FC = () => {
           colors={['#dff5f2', '#f5efe6']}
           style={styles.header}
         >
-          <Text style={styles.date}>Friday, June 7</Text>
-          <Text style={styles.greeting}>Good Morning, Evan</Text>
+          <Text style={styles.date}>{formattedDate}</Text>
+          <Text style={styles.greeting}>{getGreeting()}</Text>
 
         </LinearGradient>
 
@@ -250,7 +269,7 @@ export default CameraScreen;
 
 const styles = StyleSheet.create({
   previewContainer: {
-    width: '100%',
+    width: '80%',
     height: screenHeight * 0.4,
     marginTop: 10,
   },
