@@ -1,76 +1,208 @@
-import React from 'react'
-import {View, Button, Alert} from 'react-native'
-import {launchCamera} from 'react-native-image-picker'
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  Alert,
+  PermissionsAndroid, Platform
+} from 'react-native';
 
-const CameraScreen = () => {
+import Geolocation, {
+  GeoPosition,
+  GeoCoordinates,
+} from 'react-native-geolocation-service';
+import axios from 'axios';
+import { launchCamera, Asset } from 'react-native-image-picker'; // ✅ added
 
-  const sendToAWS = async (base64: string) => {
+type LocationCoords = GeoCoordinates;
 
+const ClockInScreen: React.FC = () => {
+
+  const [hasPermission, setHasPermission] = useState<boolean>(false);
+  const [photo, setPhoto] = useState<string | null>(null); // base64 string
+  const [location, setLocation] = useState<LocationCoords | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    requestPermissions();
+  }, []);
+
+  const requestPermissions = async (): Promise<void> => {
     try {
+      let cameraGranted = true;
 
-      const response = await fetch(
-        "https://uqm06v0voe.execute-api.us-east-1.amazonaws.com/soc/ta",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            image: base64
-          })
-        }
-      )
-
-      const data = await response.json()
-
-      console.log("AWS Response:", data)
-
-      Alert.alert("Response", JSON.stringify(data))
-
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const openCamera = () => {
-
-    launchCamera(
-      {
-        mediaType: 'photo',
-        includeBase64: true,
-		maxWidth:800,
-		maxHeight:800,
-        cameraType: 'back',
-        quality: 0.7
-      },
-      (response) => {
-
-        if (response.didCancel) {
-          console.log('User cancelled camera')
-          return
-        }
-
-        if (response.errorCode) {
-          console.log('Camera Error: ', response.errorMessage)
-          return
-        }
-
-        const base64 = response.assets?.[0]?.base64
-
-        if (base64) {
-          console.log("Base64 length:", base64.length)
-          sendToAWS(base64)
-        }
-
+      if (Platform.OS === 'android') {
+        const cameraPermission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA
+        );
+        cameraGranted = cameraPermission === PermissionsAndroid.RESULTS.GRANTED;
       }
-    )
+
+      const locationPermission = await Geolocation.requestAuthorization('whenInUse');
+
+      if (cameraGranted && locationPermission === 'granted') {
+        setHasPermission(true);
+      } else {
+        Alert.alert('Permission required');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getLocation = (): Promise<LocationCoords> => {
+    return new Promise((resolve, reject) => {
+      Geolocation.getCurrentPosition(
+        (position: GeoPosition) => resolve(position.coords),
+        error => reject(error),
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 10000,
+        }
+      );
+    });
+  };
+
+  // capture using image-picker
+  const capturePhoto = async (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      launchCamera(
+        {
+          mediaType: 'photo',
+          includeBase64: true,
+          quality: 0.7,
+          cameraType: 'front',
+          maxWidth: 800,
+          maxHeight: 800,
+        },
+        response => {
+          if (response.didCancel) {
+            return;
+          } else if (response.errorCode) {
+            reject(response.errorMessage);
+          } else {
+            const asset: Asset | undefined = response.assets?.[0];
+            if (!asset?.base64) {
+              reject('No base64 received');
+            } else {
+              resolve(asset.base64);
+            }
+          }
+        }
+      );
+    });
+  };
+
+  const handleClockIn = async (): Promise<void> => {
+    try {
+      setLoading(true);
+
+      // 1. Get location
+      const coords = await getLocation();
+      setLocation(coords);
+
+      // 2. Capture photo (base64)
+      const base64Image = await capturePhoto();
+      if (!base64Image) return;
+
+      setPhoto(base64Image);
+
+      // 3. Prepare payload
+      const payload = {
+        type: 'clock_in',
+        timestamp: new Date().toISOString(),
+        location: {
+          lat: coords.latitude,
+          lng: coords.longitude,
+          accuracy: coords.accuracy,
+        },
+        photo: `data:image/jpeg;base64,${base64Image}`,
+      };
+
+      // 4. Send to API
+      await axios.post(
+        'https://uqm06v0voe.execute-api.us-east-1.amazonaws.com/soc/ta',
+        payload
+      );
+
+      Alert.alert('Success', 'Clock-in recorded!');
+    } catch (error) {
+      Alert.alert('Error', String(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!hasPermission) {
+    return (
+      <View style={styles.center}>
+        <Text>Loading camera...</Text>
+      </View>
+    );
   }
 
   return (
-    <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
-      <Button title="Open Camera" onPress={openCamera}/>
-    </View>
-  )
-}
+    <View style={styles.container}>
 
-export default CameraScreen
+      {/* Preview */}
+      {photo && (
+        <Image
+          source={{ uri: `data:image/jpeg;base64,${photo}` }}
+          style={styles.preview}
+        />
+      )}
+
+      {/* Button */}
+      <TouchableOpacity style={styles.button} onPress={handleClockIn}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Clock In</Text>
+        )}
+      </TouchableOpacity>
+
+      {/* Location */}
+      {location && (
+        <Text style={styles.locationText}>
+          Lat: {location.latitude} | Lng: {location.longitude}
+        </Text>
+      )}
+    </View>
+  );
+};
+
+export default ClockInScreen;
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#000' },
+  camera: { flex: 1 },
+  preview: {
+    position: 'absolute',
+    bottom: 120,
+    right: 20,
+    width: 80,
+    height: 120,
+    borderRadius: 10,
+  },
+  button: {
+    position: 'absolute',
+    bottom: 40,
+    alignSelf: 'center',
+    backgroundColor: '#1E90FF',
+    padding: 15,
+    borderRadius: 10,
+  },
+  buttonText: { color: '#fff', fontSize: 16 },
+  locationText: {
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'center',
+    color: '#fff',
+    fontSize: 12,
+  },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+});
