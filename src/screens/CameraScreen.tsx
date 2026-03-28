@@ -148,11 +148,15 @@ const ClockInScreen: React.FC = () => {
         },
         photo: `data:image/jpeg;base64,${base64Image}`,
       };
-
+      Alert.alert(JSON.stringify(payload));
       // 4. Send to API
-      await axios.post(
+      const response = await axios.post(
         'https://uqm06v0voe.execute-api.us-east-1.amazonaws.com/soc/ta',
         payload
+      );
+      Alert.alert(
+        'Success',
+        `Status: ${response.status}\nMessage: ${JSON.stringify(response.data)}`
       );
 
       Alert.alert('Success', 'Clock-in recorded!');
