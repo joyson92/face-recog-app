@@ -14,7 +14,7 @@ import {
 
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/Feather';
+import Feather from '@react-native-vector-icons/feather';
 
 import Geolocation, {
   GeoPosition,
@@ -216,7 +216,7 @@ const CameraScreen: React.FC = () => {
         >
           <Text style={styles.date}>{formattedDate}</Text>
           <Text style={styles.greeting}>{getGreeting()}</Text>
-          <Icon name="home" size={30} color="red" />
+          <Feather name="home" size={30} color="red" />
         </LinearGradient>
 
         {/* IMAGE PREVIEW (40% screen) */}
@@ -250,7 +250,7 @@ const CameraScreen: React.FC = () => {
           {/* CHECK IN */}
           <View style={styles.timeBox}>
             <View style={styles.labelContainer}>
-              <Icon name="clock" size={12} color="#ff6b2d" />
+              <Feather name="clock" size={12} color="#ff6b2d" />
               <Text style={styles.timeLabelText}>Check In</Text>
             </View>
             <Text style={styles.timeValue}>10:30 AM</Text>
@@ -270,7 +270,7 @@ const CameraScreen: React.FC = () => {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Icon name="plus" size={24} color="#fff" />
+          <Feather name="plus" size={24} color="#fff" />
         )}
       </TouchableOpacity>
 
@@ -476,7 +476,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
     zIndex: 1,

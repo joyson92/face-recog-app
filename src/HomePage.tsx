@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/Feather';
+import Feather from '@react-native-vector-icons/feather';
 
 interface AbsenceCardProps {
   title: string;
@@ -29,14 +29,14 @@ interface NavItemProps {
 
 const NavItem: React.FC<NavItemProps> = ({ icon, label }) => (
   <View style={styles.navItem}>
-    <Icon name={icon} size={20} color="#fff" />
+    {/* <Feather name={icon} size={20} color="#fff" /> */}
     <Text style={styles.navText}>{label}</Text>
   </View>
 );
 
 const AbsenceCard: React.FC<AbsenceCardProps> = ({ title, value }) => (
   <View style={styles.absCard}>
-    <Icon name="briefcase" size={18} color="#ff6b2d" />
+    <Feather name="briefcase" size={18} color="#ff6b2d" />
     <Text style={styles.absValue}>{value}</Text>
     <Text style={styles.absTitle}>{title}</Text>
   </View>
@@ -114,7 +114,7 @@ const HomePage: React.FC = () => {
 
       {/* FLOATING BUTTON */}
       <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 60 + 10 }]}>
-        <Icon name="plus" size={24} color="#fff" />
+        <Feather name="plus" size={24} color="#fff" />
       </TouchableOpacity>
 
       {/* BOTTOM NAV */}
