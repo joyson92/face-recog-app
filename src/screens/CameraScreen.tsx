@@ -86,12 +86,28 @@ const ClockInScreen: React.FC = () => {
         error => reject(error),
         {
           enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 10000,
+          timeout: 20000,
+          maximumAge: 0,
+          distanceFilter: 0
         }
       );
     });
   };
+
+  const getAccurateLocation = (accuracyThreshold = 10): Promise<LocationCoords> => {
+  return new Promise((resolve, reject) => {
+    const watchId = Geolocation.watchPosition(
+      (position) => {
+        if (position.coords.accuracy <= accuracyThreshold) {
+          Geolocation.clearWatch(watchId);
+          resolve(position.coords);
+        }
+      },
+      (error) => reject(error),
+      { enableHighAccuracy: true, distanceFilter: 0, interval: 1000, fastestInterval: 500 }
+    );
+  });
+};
 
   // capture using image-picker
   const capturePhoto = async (): Promise<string> => {
@@ -131,6 +147,8 @@ const ClockInScreen: React.FC = () => {
       const coords = await getLocation();
       setLocation(coords);
 
+      const accurateCoords = await getAccurateLocation();
+
       // 2. Capture photo (base64)
       const base64Image = await capturePhoto();
       if (!base64Image) return;
@@ -146,7 +164,8 @@ const ClockInScreen: React.FC = () => {
           lng: coords.longitude,
           accuracy: coords.accuracy,
         },
-        photo: `data:image/jpeg;base64,${base64Image}`,
+        photo: base64Image,
+        accurateLocation: accurateCoords
       };
       Alert.alert(JSON.stringify(payload));
       // 4. Send to API
