@@ -6,10 +6,14 @@
  */
 
 import React from 'react'
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import CameraScreen from './src/screens/CameraScreen'
+import HomePage from './src/HomePage';
 
 function App(): JSX.Element {
-  return <CameraScreen />
+  return (<SafeAreaProvider>
+    <HomePage />
+  </SafeAreaProvider>);
 }
 
 export default App

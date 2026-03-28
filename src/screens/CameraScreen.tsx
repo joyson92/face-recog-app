@@ -15,7 +15,7 @@ import Geolocation, {
   GeoCoordinates,
 } from 'react-native-geolocation-service';
 import axios from 'axios';
-import { launchCamera, Asset } from 'react-native-image-picker'; // ✅ added
+import { launchCamera, Asset } from 'react-native-image-picker';
 
 type LocationCoords = GeoCoordinates;
 
@@ -94,21 +94,6 @@ const ClockInScreen: React.FC = () => {
     });
   };
 
-  const getAccurateLocation = (accuracyThreshold = 10): Promise<LocationCoords> => {
-  return new Promise((resolve, reject) => {
-    const watchId = Geolocation.watchPosition(
-      (position) => {
-        if (position.coords.accuracy <= accuracyThreshold) {
-          Geolocation.clearWatch(watchId);
-          resolve(position.coords);
-        }
-      },
-      (error) => reject(error),
-      { enableHighAccuracy: true, distanceFilter: 0, interval: 1000, fastestInterval: 500 }
-    );
-  });
-};
-
   // capture using image-picker
   const capturePhoto = async (): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -147,8 +132,6 @@ const ClockInScreen: React.FC = () => {
       const coords = await getLocation();
       setLocation(coords);
 
-      const accurateCoords = await getAccurateLocation();
-
       // 2. Capture photo (base64)
       const base64Image = await capturePhoto();
       if (!base64Image) return;
@@ -164,10 +147,8 @@ const ClockInScreen: React.FC = () => {
           lng: coords.longitude,
           accuracy: coords.accuracy,
         },
-        photo: base64Image,
-        accurateLocation: accurateCoords
+        photo: base64Image
       };
-      Alert.alert(JSON.stringify(payload));
       // 4. Send to API
       const response = await axios.post(
         'https://uqm06v0voe.execute-api.us-east-1.amazonaws.com/soc/ta',
