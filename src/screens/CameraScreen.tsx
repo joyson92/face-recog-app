@@ -216,18 +216,18 @@ const CameraScreen: React.FC = () => {
         >
           <Text style={styles.date}>{formattedDate}</Text>
           <Text style={styles.greeting}>{getGreeting()}</Text>
-
+          <Icon name="home" size={30} color="red" />
         </LinearGradient>
 
         {/* IMAGE PREVIEW (40% screen) */}
-        {photo && (
-          <View style={styles.previewContainer}>
+        <View style={styles.previewContainer}>
+          {photo && (
             <Image
               source={{ uri: `data:image/jpeg;base64,${photo}` }}
               style={styles.previewImage}
             />
-          </View>
-        )}
+          )}
+        </View>
 
         {/* LOCATION DETAILS */}
         {location && (
@@ -243,6 +243,26 @@ const CameraScreen: React.FC = () => {
             </Text>
           </View>
         )}
+
+        {/* CHECK IN / CHECK OUT */}
+        <View style={styles.timeRow}>
+
+          {/* CHECK IN */}
+          <View style={styles.timeBox}>
+            <View style={styles.labelContainer}>
+              <Icon name="clock" size={12} color="#ff6b2d" />
+              <Text style={styles.timeLabelText}>Check In</Text>
+            </View>
+            <Text style={styles.timeValue}>10:30 AM</Text>
+          </View>
+
+          {/* CHECK OUT */}
+          <View style={styles.timeBox}>
+            <Text style={styles.timeLabel}>Check Out</Text>
+            <Text style={styles.timeValue}>--:--</Text>
+          </View>
+
+        </View>
       </ScrollView>
 
       {/* FLOATING BUTTON */}
@@ -268,10 +288,59 @@ const CameraScreen: React.FC = () => {
 export default CameraScreen;
 
 const styles = StyleSheet.create({
+  labelContainer: {
+    position: 'absolute',
+    top: -10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f6f6f6',
+    paddingHorizontal: 6,
+  },
+
+  timeLabelText: {
+    fontSize: 12,
+    color: '#ff6b2d',
+    marginLeft: 4,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+    alignSelf: 'center',
+    marginTop: 20,
+  },
+
+  timeBox: {
+    width: '48%',
+    borderWidth: 2,
+    borderColor: '#ff6b2d',
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    backgroundColor: '#fff',
+  },
+
+  timeLabel: {
+    position: 'absolute',
+    top: -10,
+    backgroundColor: '#f6f6f6', // match screen bg
+    paddingHorizontal: 8,
+    fontSize: 12,
+    color: '#ff6b2d',
+  },
+
+  timeValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
   previewContainer: {
     width: '80%',
     height: screenHeight * 0.4,
     marginTop: 10,
+    alignSelf: 'center'
   },
 
   previewImage: {
