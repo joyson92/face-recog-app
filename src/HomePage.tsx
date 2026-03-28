@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/Feather';
 
 interface AbsenceCardProps {
   title: string;
@@ -21,8 +22,21 @@ interface RequestItemProps {
   status: string;
 }
 
+interface NavItemProps {
+  icon: string;
+  label: string;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ icon, label }) => (
+  <View style={styles.navItem}>
+    <Icon name={icon} size={20} color="#fff" />
+    <Text style={styles.navText}>{label}</Text>
+  </View>
+);
+
 const AbsenceCard: React.FC<AbsenceCardProps> = ({ title, value }) => (
   <View style={styles.absCard}>
+    <Icon name="briefcase" size={18} color="#ff6b2d" />
     <Text style={styles.absValue}>{value}</Text>
     <Text style={styles.absTitle}>{title}</Text>
   </View>
@@ -39,7 +53,7 @@ const HomePage: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        
+
         {/* HEADER */}
         <LinearGradient
           colors={['#dff5f2', '#f5efe6']}
@@ -99,15 +113,15 @@ const HomePage: React.FC = () => {
 
       {/* FLOATING BUTTON */}
       <TouchableOpacity style={styles.fab}>
-        <Text style={{ color: '#fff', fontSize: 22 }}>+</Text>
+        <Icon name="plus" size={24} color="#fff" />
       </TouchableOpacity>
 
       {/* BOTTOM NAV */}
       <View style={styles.bottomNav}>
-        <Text style={styles.navText}>Home</Text>
-        <Text style={styles.navText}>Calendar</Text>
-        <Text style={styles.navText}>Wallet</Text>
-        <Text style={styles.navText}>More</Text>
+        <NavItem icon="home" label="Home" />
+        <NavItem icon="calendar" label="Calendar" />
+        <NavItem icon="credit-card" label="Wallet" />
+        <NavItem icon="menu" label="More" />
       </View>
     </SafeAreaView>
   );
@@ -243,4 +257,7 @@ const styles = StyleSheet.create({
   navText: {
     color: '#fff',
   },
+  navItem: {
+  alignItems: 'center',
+},
 });
