@@ -7,8 +7,14 @@ import {
   Image,
   ActivityIndicator,
   Alert,
-  PermissionsAndroid, Platform
+  PermissionsAndroid, Platform,
+  ScrollView,
+  Dimensions
 } from 'react-native';
+
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/Feather';
 
 import Geolocation, {
   GeoPosition,
@@ -18,8 +24,9 @@ import axios from 'axios';
 import { launchCamera, Asset } from 'react-native-image-picker';
 
 type LocationCoords = GeoCoordinates;
+const screenHeight = Dimensions.get('window').height;
 
-const ClockInScreen: React.FC = () => {
+const CameraScreen: React.FC = () => {
 
   const [hasPermission, setHasPermission] = useState<boolean>(false);
   const [photo, setPhoto] = useState<string | null>(null); // base64 string
@@ -178,64 +185,234 @@ const ClockInScreen: React.FC = () => {
     );
   }
 
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}>
 
-      {/* Preview */}
-      {photo && (
-        <Image
-          source={{ uri: `data:image/jpeg;base64,${photo}` }}
-          style={styles.preview}
-        />
-      )}
+        {/* HEADER */}
+        <LinearGradient
+          colors={['#dff5f2', '#f5efe6']}
+          style={styles.header}
+        >
+          <Text style={styles.date}>Friday, June 7</Text>
+          <Text style={styles.greeting}>Good Morning, Evan</Text>
 
-      {/* Button */}
-      <TouchableOpacity style={styles.button} onPress={handleClockIn}>
+        </LinearGradient>
+
+        {/* IMAGE PREVIEW (40% screen) */}
+        {photo && (
+          <View style={styles.previewContainer}>
+            <Image
+              source={{ uri: `data:image/jpeg;base64,${photo}` }}
+              style={styles.previewImage}
+            />
+          </View>
+        )}
+
+        {/* LOCATION DETAILS */}
+        {location && (
+          <View style={styles.locationContainer}>
+            <Text style={styles.locationText}>
+              Latitude: {location.latitude}
+            </Text>
+            <Text style={styles.locationText}>
+              Longitude: {location.longitude}
+            </Text>
+            <Text style={styles.locationText}>
+              Accuracy: {location.accuracy}
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* FLOATING BUTTON */}
+      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 60 + 10 }]} onPress={handleClockIn}>
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Clock In</Text>
+          <Icon name="plus" size={24} color="#fff" />
         )}
       </TouchableOpacity>
 
-      {/* Location */}
-      {location && (
-        <Text style={styles.locationText}>
-          Lat: {location.latitude} | Lng: {location.longitude}
-        </Text>
-      )}
-    </View>
+      {/* BOTTOM NAV */}
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom > 0 ? insets.bottom : 10 }]}>
+        {/* <NavItem icon="home" label="Home" />
+            <NavItem icon="calendar" label="Calendar" />
+            <NavItem icon="credit-card" label="Wallet" />
+            <NavItem icon="menu" label="More" /> */}
+      </View>
+    </SafeAreaView>
   );
 };
 
-export default ClockInScreen;
+export default CameraScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
-  camera: { flex: 1 },
-  preview: {
-    position: 'absolute',
-    bottom: 120,
-    right: 20,
-    width: 80,
-    height: 120,
-    borderRadius: 10,
+  previewContainer: {
+    width: '100%',
+    height: screenHeight * 0.4,
+    marginTop: 10,
   },
-  button: {
-    position: 'absolute',
-    bottom: 40,
-    alignSelf: 'center',
-    backgroundColor: '#1E90FF',
+
+  previewImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+
+  locationContainer: {
     padding: 15,
-    borderRadius: 10,
+    backgroundColor: '#fff',
+    margin: 15,
+    borderRadius: 12,
   },
-  buttonText: { color: '#fff', fontSize: 16 },
+
   locationText: {
-    position: 'absolute',
-    bottom: 10,
-    alignSelf: 'center',
-    color: '#fff',
-    fontSize: 12,
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 5,
   },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+
+  container: {
+    flex: 1,
+    backgroundColor: '#f6f6f6',
+  },
+  header: {
+    padding: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  date: {
+    fontSize: 12,
+    color: '#777',
+  },
+  greeting: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginVertical: 5,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+  },
+  absCard: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    width: '30%',
+  },
+  absValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  absTitle: {
+    fontSize: 12,
+    color: '#777',
+  },
+  hoursCard: {
+    backgroundColor: '#fff',
+    margin: 15,
+    padding: 15,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  hoursText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  clockBtn: {
+    backgroundColor: '#ff6b2d',
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  section: {
+    paddingHorizontal: 15,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+  requestItem: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  reqTitle: {
+    fontWeight: '500',
+  },
+  reqStatus: {
+    color: '#888',
+  },
+  form: {
+    backgroundColor: '#fff',
+    margin: 15,
+    padding: 15,
+    borderRadius: 12,
+  },
+  formTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: '#f3f3f3',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  submitBtn: {
+    backgroundColor: '#1e1b2e',
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  bottomNav: {
+    height: 60,
+    backgroundColor: '#1e1b2e',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  fab: {
+    position: 'absolute',
+    alignSelf: 'center',
+    backgroundColor: '#ff6b2d',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  navText: {
+    color: '#fff',
+  },
+  navItem: {
+    alignItems: 'center',
+  },
 });

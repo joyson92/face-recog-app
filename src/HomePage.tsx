@@ -8,7 +8,7 @@ import {
   TextInput,
   Switch,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 
@@ -50,9 +50,10 @@ const RequestItem: React.FC<RequestItemProps> = ({ title, status }) => (
 );
 
 const HomePage: React.FC = () => {
+  const insets = useSafeAreaInsets();
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}>
 
         {/* HEADER */}
         <LinearGradient
@@ -112,12 +113,12 @@ const HomePage: React.FC = () => {
       </ScrollView>
 
       {/* FLOATING BUTTON */}
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 60 + 10 }]}>
         <Icon name="plus" size={24} color="#fff" />
       </TouchableOpacity>
 
       {/* BOTTOM NAV */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom > 0 ? insets.bottom : 10 }]}>
         <NavItem icon="home" label="Home" />
         <NavItem icon="calendar" label="Calendar" />
         <NavItem icon="credit-card" label="Wallet" />
@@ -236,9 +237,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
+  bottomNav: {
+    height: 60,
+    backgroundColor: '#1e1b2e',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  },
   fab: {
     position: 'absolute',
-    bottom: 30,
     alignSelf: 'center',
     backgroundColor: '#ff6b2d',
     width: 60,
@@ -252,18 +264,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-  },
-  bottomNav: {
-    height: 60,
-    backgroundColor: '#1e1b2e',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
   },
   navText: {
     color: '#fff',
