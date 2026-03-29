@@ -24,6 +24,7 @@ import axios from 'axios';
 import { launchCamera, Asset } from 'react-native-image-picker';
 
 type LocationCoords = GeoCoordinates;
+type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
 const screenHeight = Dimensions.get('window').height;
 
 interface TimeAttendance {
@@ -33,6 +34,18 @@ interface TimeAttendance {
   checkIn?: string;
   checkOut?: string;
 };
+
+interface NavItemProps {
+  icon: FeatherIconName;
+  label: string;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ icon, label }) => (
+  <View style={styles.navItem}>
+    <Feather name={icon} size={20} color="#fff" />
+    <Text style={styles.navText}>{label}</Text>
+  </View>
+);
 
 const CameraScreen: React.FC = () => {
 
@@ -118,7 +131,17 @@ const CameraScreen: React.FC = () => {
   const getLocation = (): Promise<LocationCoords> => {
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition(
-        (position: GeoPosition) => resolve(position.coords),
+        (position: GeoPosition) => {
+          if (position.mocked) {
+            reject('Mock location detected');
+            return;
+          }
+          if (position.coords.accuracy > 100) {
+            reject('Mock location detected');
+            return;
+          }
+          resolve(position.coords)
+        },
         error => reject(error),
         {
           enableHighAccuracy: true,
@@ -209,10 +232,19 @@ const CameraScreen: React.FC = () => {
         });
       }
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Failed to capture!',
-      });
+      if (String(error).includes('Mock location')) {
+        Toast.show({
+          type: 'error',
+          text1: 'Fake location detected!',
+          text2: 'Please disable fake GPS apps',
+        });
+        return;
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to capture!',
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -280,21 +312,27 @@ const CameraScreen: React.FC = () => {
         {/* IMAGE PREVIEW (40% screen) */}
         <TouchableOpacity
           style={styles.previewContainer}
-          onPress={handleClockIn}
+          onPress={hasPermission ? handleClockIn : requestPermissions}
           activeOpacity={0.8}
         >
-          {photo ? (
-            <Image
-              source={{ uri: `data:image/jpeg;base64,${photo}` }}
-              style={styles.previewImage}
-            />
+          {hasPermission ? (
+            photo ? (
+              <Image
+                source={{ uri: `data:image/jpeg;base64,${photo}` }}
+                style={styles.previewImage}
+              />
+            ) : (
+              <View style={styles.placeholderContainer}>
+                <Feather name="camera" size={40} color="#ccc" />
+                <Text style={styles.placeholderText}>No Image Captured</Text>
+                <Text style={styles.ctaText}>Tap to capture</Text>
+              </View>
+            )
           ) : (
-            <View style={styles.placeholderContainer}>
-              <Feather name="camera" size={40} color="#ccc" />
-              <Text style={styles.placeholderText}>No Image Captured</Text>
-              <Text style={styles.ctaText}>
-                Tap to capture
-              </Text>
+            <View style={styles.permissionContainer}>
+              <Feather name="lock" size={40} color="#ff6b2d" />
+              <Text style={styles.permissionText}>Camera & Location required</Text>
+              <Text style={styles.permissionCTA}>Tap to allow permissions</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -344,20 +382,25 @@ const CameraScreen: React.FC = () => {
       </ScrollView>
 
       {/* FLOATING BUTTON */}
-      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 30 }]} onPress={handleClockIn}>
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Feather name="plus" size={24} color="#fff" />
-        )}
-      </TouchableOpacity>
+      {hasPermission && (
+        <TouchableOpacity
+          style={[styles.fab, { bottom: insets.bottom + 40 }]}
+          onPress={handleClockIn}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Feather name="plus" size={24} color="#fff" />
+          )}
+        </TouchableOpacity>
+      )}
 
       {/* BOTTOM NAV */}
       <View style={[styles.bottomNav, { height: 60 + insets.bottom, paddingBottom: insets.bottom }]}>
-        {/* <NavItem icon="home" label="Home" />
-            <NavItem icon="calendar" label="Calendar" />
-            <NavItem icon="credit-card" label="Wallet" />
-            <NavItem icon="menu" label="More" /> */}
+        <NavItem icon="home" label="Home" />
+        <NavItem icon="calendar" label="Calendar" />
+        <NavItem icon="dollar-sign" label="Wallet" />
+        <NavItem icon="more-horizontal" label="More" />
       </View>
     </SafeAreaView>
   );
@@ -366,6 +409,29 @@ const CameraScreen: React.FC = () => {
 export default CameraScreen;
 
 const styles = StyleSheet.create({
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ff6b2d',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    backgroundColor: '#fff5ef',
+  },
+
+  permissionText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+
+  permissionCTA: {
+    marginTop: 5,
+    color: '#ff6b2d',
+    fontWeight: '600',
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

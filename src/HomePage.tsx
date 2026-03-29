@@ -12,6 +12,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import LinearGradient from 'react-native-linear-gradient';
 import Feather from '@react-native-vector-icons/feather';
 
+type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
+
 interface AbsenceCardProps {
   title: string;
   value: string;
@@ -23,13 +25,13 @@ interface RequestItemProps {
 }
 
 interface NavItemProps {
-  icon: string;
+  icon: FeatherIconName;
   label: string;
 }
 
 const NavItem: React.FC<NavItemProps> = ({ icon, label }) => (
   <View style={styles.navItem}>
-    {/* <Feather name={icon} size={20} color="#fff" /> */}
+    <Feather name={icon} size={20} color="#fff" />
     <Text style={styles.navText}>{label}</Text>
   </View>
 );
