@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Image,
   ActivityIndicator,
-  Alert,
   PermissionsAndroid, Platform,
   ScrollView,
   Dimensions
@@ -15,6 +14,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Feather from '@react-native-vector-icons/feather';
+import Toast from 'react-native-toast-message';
 
 import Geolocation, {
   GeoPosition,
@@ -26,12 +26,36 @@ import { launchCamera, Asset } from 'react-native-image-picker';
 type LocationCoords = GeoCoordinates;
 const screenHeight = Dimensions.get('window').height;
 
+interface TimeAttendance {
+  empName?: string;
+  empId?: string;
+  totalHrs?: string;
+  checkIn?: string;
+  checkOut?: string;
+};
+
 const CameraScreen: React.FC = () => {
 
   const [hasPermission, setHasPermission] = useState<boolean>(false);
   const [photo, setPhoto] = useState<string | null>(null); // base64 string
   const [location, setLocation] = useState<LocationCoords | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [timeAttendance, setTimeAttendance] = useState<TimeAttendance | null>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const formattedTime = currentTime.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
 
   useEffect(() => {
     requestPermissions();
@@ -76,13 +100,18 @@ const CameraScreen: React.FC = () => {
       }
 
       if (cameraGranted && locationGranted) {
-        setHasPermission(true); // ✅ Now it will properly update
+        setHasPermission(true); //Now it will properly update
       } else {
-        Alert.alert('Permission required');
+        Toast.show({
+          type: 'error',
+          text1: 'Permission required!',
+        });
       }
     } catch (err) {
-      console.error(err);
-      Alert.alert("Error", String(err));
+      Toast.show({
+        type: 'error',
+        text1: String(err),
+      });
     }
   };
 
@@ -134,11 +163,9 @@ const CameraScreen: React.FC = () => {
   const handleClockIn = async (): Promise<void> => {
     try {
       setLoading(true);
-
       // 1. Get location
       const coords = await getLocation();
       setLocation(coords);
-
       // 2. Capture photo (base64)
       const base64Image = await capturePhoto();
       if (!base64Image) return;
@@ -148,7 +175,6 @@ const CameraScreen: React.FC = () => {
       // 3. Prepare payload
       const payload = {
         type: 'clock_in',
-        timestamp: new Date().toISOString(),
         location: {
           lat: coords.latitude,
           lng: coords.longitude,
@@ -158,21 +184,35 @@ const CameraScreen: React.FC = () => {
       };
       // 4. Send to API
       const response = await axios.post(
-        'https://uqm06v0voe.execute-api.us-east-1.amazonaws.com/soc/ta',
+        'https://3aq9qolzw0.execute-api.us-east-1.amazonaws.com/cpta/ta',
         payload
       );
       if (response.status === 200) {
-        Alert.alert('Success', 'Clock-in recorded!');
+        const taResponse =
+          typeof response.data.data === 'string'
+            ? JSON.parse(response.data.data)
+            : response.data.data;
+        setTimeAttendance(taResponse);
+        Toast.show({
+          type: 'success',
+          text1: 'Clock-in recorded!',
+        });
 
         setTimeout(() => {
           setPhoto(null);
           setLocation(null);
         }, 5000);
       } else {
-        Alert.alert('Error', 'Failed to record!');
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to capture!',
+        });
       }
     } catch (error) {
-      Alert.alert('Error', String(error));
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to capture!',
+      });
     } finally {
       setLoading(false);
     }
@@ -214,8 +254,27 @@ const CameraScreen: React.FC = () => {
           colors={['#dff5f2', '#f5efe6']}
           style={styles.header}
         >
-          <Text style={styles.date}>{formattedDate}</Text>
-          <Text style={styles.greeting}>{getGreeting()}</Text>
+          <View style={styles.headerRow}>
+
+            {/* LEFT SIDE */}
+            <View>
+              <View style={styles.row}>
+                <Feather name="calendar" size={14} color="#777" />
+                <Text style={styles.date}>{formattedDate}</Text>
+              </View>
+              <View style={styles.row}>
+                <Feather name="sun" size={16} color="#ffb300" />
+                <Text style={styles.greeting}>{getGreeting()}</Text>
+              </View>
+            </View>
+
+            {/* RIGHT SIDE */}
+            <View style={styles.timeContainer}>
+              <Feather name="clock" size={18} color="#333" />
+              <Text style={styles.time}>{formattedTime}</Text>
+            </View>
+
+          </View>
         </LinearGradient>
 
         {/* IMAGE PREVIEW (40% screen) */}
@@ -241,45 +300,24 @@ const CameraScreen: React.FC = () => {
         </TouchableOpacity>
 
         {/* EMPLOYEE INFO */}
-        {/* EMPLOYEE INFO */}
         <View style={styles.employeeContainer}>
-
-          {/* NAME */}
           <View style={styles.infoRow}>
             <Feather name="user" size={16} color="#ff6b2d" />
-            <Text style={styles.employeeName}>Joyson</Text>
+            <Text style={styles.employeeName}>{timeAttendance?.empName || 'Employee Name'}</Text>
           </View>
 
-          {/* ID */}
           <View style={styles.infoRow}>
             <Feather name="hash" size={16} color="#ff6b2d" />
-            <Text style={styles.employeeId}>E0001</Text>
+            <Text style={styles.employeeId}>{timeAttendance?.empId || 'Emp Id'}</Text>
           </View>
 
-          {/* WORK HOURS */}
           <View style={styles.workHoursBox}>
             <Feather name="clock" size={14} color="#ff6b2d" />
             <Text style={styles.workHoursText}>
-              8hrs 20mins
+              {timeAttendance?.totalHrs || '0h 0m'}
             </Text>
           </View>
-
         </View>
-
-        {/* LOCATION DETAILS */}
-        {location && (
-          <View style={styles.locationContainer}>
-            <Text style={styles.locationText}>
-              Latitude: {location.latitude}
-            </Text>
-            <Text style={styles.locationText}>
-              Longitude: {location.longitude}
-            </Text>
-            <Text style={styles.locationText}>
-              Accuracy: {location.accuracy}
-            </Text>
-          </View>
-        )}
 
         {/* CHECK IN / CHECK OUT */}
         <View style={styles.timeRow}>
@@ -290,7 +328,7 @@ const CameraScreen: React.FC = () => {
               <Feather name="clock" size={12} color="#ff6b2d" />
               <Text style={styles.timeLabelText}>Check In</Text>
             </View>
-            <Text style={styles.timeValue}>10:30 AM</Text>
+            <Text style={styles.timeValue}>{timeAttendance?.checkIn || '--:--'}</Text>
           </View>
 
           {/* CHECK OUT */}
@@ -299,14 +337,14 @@ const CameraScreen: React.FC = () => {
               <Feather name="clock" size={12} color="#ff6b2d" />
               <Text style={styles.timeLabelText}>Check Out</Text>
             </View>
-            <Text style={styles.timeValue}>--:--</Text>
+            <Text style={styles.timeValue}>{timeAttendance?.checkOut || '--:--'}</Text>
           </View>
 
         </View>
       </ScrollView>
 
       {/* FLOATING BUTTON */}
-      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 40 }]} onPress={handleClockIn}>
+      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 30 }]} onPress={handleClockIn}>
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
@@ -328,6 +366,41 @@ const CameraScreen: React.FC = () => {
 export default CameraScreen;
 
 const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  date: {
+    fontSize: 12,
+    color: '#777',
+    marginLeft: 6,
+  },
+
+  greeting: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginTop: 5,
+    marginLeft: 6,
+  },
+
+  time: {
+    fontSize: 32,
+    fontWeight: '600',
+    color: '#555',
+    marginLeft: 6,
+    letterSpacing: 1
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   ctaText: {
     color: '#ff6b2d',
     marginTop: 6,
@@ -474,15 +547,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-  },
-  date: {
-    fontSize: 12,
-    color: '#777',
-  },
-  greeting: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginVertical: 5,
   },
   cardRow: {
     flexDirection: 'row',
