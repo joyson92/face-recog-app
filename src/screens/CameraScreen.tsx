@@ -250,17 +250,6 @@ const CameraScreen: React.FC = () => {
     }
   };
 
-  if (!hasPermission) {
-    return (
-      <View style={styles.center}>
-        <Text>No permission granted</Text>
-        <TouchableOpacity onPress={requestPermissions}>
-          <Text style={{ color: 'blue' }}>Grant Permissions</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   const insets = useSafeAreaInsets();
   const now = new Date();
 
