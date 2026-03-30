@@ -215,15 +215,29 @@ const CameraScreen: React.FC = () => {
           typeof response.data.data === 'string'
             ? JSON.parse(response.data.data)
             : response.data.data;
-        setTimeAttendance(taResponse);
-        Toast.show({
-          type: 'success',
-          text1: 'Clock-in recorded!',
-        });
+
+        const isEmpty =
+          taResponse == null || // null or undefined
+          (Array.isArray(taResponse) && taResponse.length === 0) || // empty array
+          (typeof taResponse === 'object' && !Array.isArray(taResponse) && Object.keys(taResponse).length === 0); // empty object
+
+        if (!isEmpty) {
+          setTimeAttendance(taResponse);
+          Toast.show({
+            type: 'success',
+            text1: 'Clock-in recorded!',
+          });
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Failed to capture!',
+          });
+        }
 
         setTimeout(() => {
           setPhoto(null);
           setLocation(null);
+          setTimeAttendance(null);
         }, 5000);
       } else {
         Toast.show({
@@ -386,10 +400,10 @@ const CameraScreen: React.FC = () => {
 
       {/* BOTTOM NAV */}
       <View style={[styles.bottomNav, { height: 60 + insets.bottom, paddingBottom: insets.bottom }]}>
-        <NavItem icon="home" label="Home" />
+        {/* <NavItem icon="home" label="Home" />
         <NavItem icon="calendar" label="Calendar" />
         <NavItem icon="dollar-sign" label="Wallet" />
-        <NavItem icon="more-horizontal" label="More" />
+        <NavItem icon="more-horizontal" label="More" /> */}
       </View>
     </SafeAreaView>
   );
