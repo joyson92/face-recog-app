@@ -159,25 +159,31 @@ const CameraScreen: React.FC = () => {
       launchCamera(
         {
           mediaType: 'photo',
-          includeBase64: true,
+          // includeBase64: true,
           quality: 0.7,
           cameraType: 'front',
-          maxWidth: 800,
-          maxHeight: 800,
+          maxWidth: 600,
+          maxHeight: 600,
         },
         response => {
           if (response.didCancel) {
+            reject('User cancelled');
             return;
-          } else if (response.errorCode) {
-            reject(response.errorMessage);
-          } else {
-            const asset: Asset | undefined = response.assets?.[0];
-            if (!asset?.base64) {
-              reject('No base64 received');
-            } else {
-              resolve(asset.base64);
-            }
           }
+
+          if (response.errorCode) {
+            reject(response.errorMessage || 'Camera error');
+            return;
+          }
+
+          const asset = response.assets?.[0];
+
+          if (!asset?.uri) {
+            reject('No image captured');
+            return;
+          }
+
+          resolve(asset.uri);
         }
       );
     });
@@ -190,25 +196,33 @@ const CameraScreen: React.FC = () => {
       const coords = await getLocation();
       setLocation(coords);
       // 2. Capture photo (base64)
-      const base64Image = await capturePhoto();
-      if (!base64Image) return;
+      const imageUri = await capturePhoto();
+      if (!imageUri) return;
 
-      setPhoto(base64Image);
+      setPhoto(imageUri);
+
+      const formData = new FormData();
+
+      formData.append('photo', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: 'photo.jpg'
+      } as any);
 
       // 3. Prepare payload
-      const payload = {
-        type: 'clock_in',
-        location: {
-          lat: coords.latitude,
-          lng: coords.longitude,
-          accuracy: coords.accuracy,
-        },
-        photo: base64Image
-      };
-      // 4. Send to API
+      formData.append('type', 'clock_in');
+      formData.append('lat', coords.latitude.toString());
+      formData.append('lng', coords.longitude.toString());
+      formData.append('accuracy', coords.accuracy.toString());
+      // 4. Send to API multipart request
       const response = await axios.post(
-        'https://3aq9qolzw0.execute-api.us-east-1.amazonaws.com/cpta/ta',
-        payload
+        'https://abc.execute-api.us-east-1.amazonaws.com/cpta/ta',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
       );
       if (response.status === 200) {
         const taResponse =
@@ -321,7 +335,7 @@ const CameraScreen: React.FC = () => {
           {hasPermission ? (
             photo ? (
               <Image
-                source={{ uri: `data:image/jpeg;base64,${photo}` }}
+                source={{ uri: photo }}
                 style={styles.previewImage}
               />
             ) : (
