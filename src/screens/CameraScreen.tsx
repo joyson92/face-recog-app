@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,7 @@ import {
   ActivityIndicator,
   PermissionsAndroid, Platform,
   ScrollView,
-  Dimensions,
-  Alert
+  Dimensions
 } from 'react-native';
 
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,7 +21,7 @@ import Geolocation, {
   GeoCoordinates,
 } from 'react-native-geolocation-service';
 import axios from 'axios';
-import { launchCamera, Asset } from 'react-native-image-picker';
+import { launchCamera } from 'react-native-image-picker';
 
 type LocationCoords = GeoCoordinates;
 type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
@@ -225,13 +224,13 @@ const CameraScreen: React.FC = () => {
           },
         }
       );
-      Alert.alert(String(response.status));
+      
       if (response.status === 200) {
         const taResponse =
           typeof response.data.body === 'string'
             ? JSON.parse(response.data.body)
             : response.data.body;
-        Alert.alert(response.data);
+        
         const isEmpty =
           taResponse == null || // null or undefined
           (Array.isArray(taResponse) && taResponse.length === 0) || // empty array
