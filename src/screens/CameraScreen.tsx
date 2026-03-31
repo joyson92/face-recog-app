@@ -227,9 +227,9 @@ const CameraScreen: React.FC = () => {
       
       if (response.status === 200) {
         const taResponse =
-          typeof response.data.body === 'string'
-            ? JSON.parse(response.data.body)
-            : response.data.body;
+          typeof response.data === 'string'
+            ? JSON.parse(response.data)
+            : response.data;
         
         const isEmpty =
           taResponse == null || // null or undefined
