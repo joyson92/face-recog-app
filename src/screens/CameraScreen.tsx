@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
   PermissionsAndroid, Platform,
   ScrollView,
-  Dimensions
+  Dimensions,
+  Alert
 } from 'react-native';
 
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -216,7 +217,7 @@ const CameraScreen: React.FC = () => {
       formData.append('accuracy', coords.accuracy.toString());
       // 4. Send to API multipart request
       const response = await axios.post(
-        'https://3aq9qolzw0.execute-api.us-east-1.amazonaws.com/cpta/ta',
+        'https://abc.execute-api.us-east-1.amazonaws.com/cpta/ta',
         formData,
         {
           headers: {
@@ -224,12 +225,13 @@ const CameraScreen: React.FC = () => {
           },
         }
       );
+      Alert.alert(String(response.status));
       if (response.status === 200) {
         const taResponse =
           typeof response.data.body === 'string'
             ? JSON.parse(response.data.body)
             : response.data.body;
-
+        Alert.alert(response.data);
         const isEmpty =
           taResponse == null || // null or undefined
           (Array.isArray(taResponse) && taResponse.length === 0) || // empty array
@@ -244,7 +246,7 @@ const CameraScreen: React.FC = () => {
         } else {
           Toast.show({
             type: 'error',
-            text1: 'Failed to capture!',
+            text1: 'Failed to capture isEmpt!',
           });
         }
 
@@ -256,7 +258,7 @@ const CameraScreen: React.FC = () => {
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Failed to capture!',
+          text1: 'Failed to capture inner !',
         });
       }
     } catch (error) {
@@ -270,7 +272,7 @@ const CameraScreen: React.FC = () => {
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Failed to capture!',
+          text1: 'Failed to capture else!',
         });
       }
     } finally {
