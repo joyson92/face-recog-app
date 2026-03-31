@@ -216,7 +216,7 @@ const CameraScreen: React.FC = () => {
       formData.append('accuracy', coords.accuracy.toString());
       // 4. Send to API multipart request
       const response = await axios.post(
-        'https://abc.execute-api.us-east-1.amazonaws.com/cpta/ta',
+        'https://3aq9qolzw0.execute-api.us-east-1.amazonaws.com/cpta/ta',
         formData,
         {
           headers: {
