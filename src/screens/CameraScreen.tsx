@@ -245,7 +245,7 @@ const CameraScreen: React.FC = () => {
         } else {
           Toast.show({
             type: 'error',
-            text1: 'Failed to capture isEmpt!',
+            text1: 'Failed to capture!',
           });
         }
 
@@ -257,7 +257,7 @@ const CameraScreen: React.FC = () => {
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Failed to capture inner !',
+          text1: 'Failed to capture!',
         });
       }
     } catch (error) {
@@ -271,7 +271,7 @@ const CameraScreen: React.FC = () => {
       } else {
         Toast.show({
           type: 'error',
-          text1: String(error),
+          text1: 'Failed to capture!',
         });
       }
     } finally {
@@ -290,7 +290,6 @@ const CameraScreen: React.FC = () => {
 
   const getGreeting = () => {
     const hour = now.getHours();
-
     if (hour < 12) return 'Good Morning';
     if (hour < 17) return 'Good Afternoon';
     return 'Good Evening';
