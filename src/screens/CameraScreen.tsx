@@ -272,7 +272,7 @@ const CameraScreen: React.FC = () => {
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Failed to capture else!',
+          text1: String(error),
         });
       }
     } finally {
