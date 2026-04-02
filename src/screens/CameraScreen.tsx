@@ -22,6 +22,13 @@ import Geolocation, {
 } from 'react-native-geolocation-service';
 import axios from 'axios';
 import { launchCamera } from 'react-native-image-picker';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Camera'>;
+
+const navigation = useNavigation<NavigationProp>();
 
 type LocationCoords = GeoCoordinates;
 type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
@@ -38,13 +45,14 @@ interface TimeAttendance {
 interface NavItemProps {
   icon: FeatherIconName;
   label: string;
+  onPress?: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label }) => (
-  <View style={styles.navItem}>
+const NavItem: React.FC<NavItemProps> = ({ icon, label, onPress }) => (
+  <TouchableOpacity style={styles.navItem} onPress={onPress}>
     <Feather name={icon} size={20} color="#fff" />
     <Text style={styles.navText}>{label}</Text>
-  </View>
+  </TouchableOpacity>
 );
 
 const CameraScreen: React.FC = () => {
@@ -224,13 +232,13 @@ const CameraScreen: React.FC = () => {
           },
         }
       );
-      
+
       if (response.status === 200) {
         const taResponse =
           typeof response.data === 'string'
             ? JSON.parse(response.data)
             : response.data;
-        
+
         const isEmpty =
           taResponse == null || // null or undefined
           (Array.isArray(taResponse) && taResponse.length === 0) || // empty array
@@ -414,10 +422,11 @@ const CameraScreen: React.FC = () => {
 
       {/* BOTTOM NAV */}
       <View style={[styles.bottomNav, { height: 60 + insets.bottom, paddingBottom: insets.bottom }]}>
-        {/* <NavItem icon="home" label="Home" />
-        <NavItem icon="calendar" label="Calendar" />
+        <NavItem icon="home" label="Home" />
+        <NavItem icon="calendar" label="Calendar"
+          onPress={() => navigation.navigate('AttendanceList')} />
         <NavItem icon="dollar-sign" label="Wallet" />
-        <NavItem icon="more-horizontal" label="More" /> */}
+        <NavItem icon="more-horizontal" label="More" />
       </View>
     </SafeAreaView>
   );
