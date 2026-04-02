@@ -138,7 +138,7 @@ const AttendanceListScreen = () => {
   );
 
   return (
-    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: '#f6f6f6' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f6f6f6' }}>
       <View style={styles.dateNav}>
 
         {/* LEFT */}

@@ -420,11 +420,11 @@ const CameraScreen: React.FC = () => {
 
       {/* BOTTOM NAV */}
       <View style={[styles.bottomNav, { height: 60 + insets.bottom, paddingBottom: insets.bottom }]}>
-        {/* <NavItem icon="home" label="Home" /> */}
+        <NavItem icon="home" label="Home" />
         <NavItem icon="calendar" label="Calendar"
           onPress={() => navigation.navigate('AttendanceList')} />
-        {/* <NavItem icon="dollar-sign" label="Wallet" /> */}
-        {/* <NavItem icon="more-horizontal" label="More" /> */}
+        <NavItem icon="dollar-sign" label="Wallet" />
+        <NavItem icon="more-horizontal" label="More" />
       </View>
     </SafeAreaView>
   );
