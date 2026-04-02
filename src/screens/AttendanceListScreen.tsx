@@ -16,24 +16,6 @@ interface EmployeeAttendance {
   isPresent?: boolean;
 }
 
-// const data: EmployeeAttendance[] = [
-//   {
-//     id: '1',
-//     name: 'Joyson Fernandes',
-//     checkIn: '10:30 AM',
-//     checkOut: '06:30 PM',
-//     totalHrs: '8h 0m',
-//     isPresent: false
-//   },
-//   {
-//     id: '2',
-//     name: 'John Doe',
-//     checkIn: '09:15 AM',
-//     totalHrs: '3h 20m',
-//     isPresent: true
-//   },
-// ];
-
 const AttendanceListScreen = () => {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -156,7 +138,7 @@ const AttendanceListScreen = () => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f6f6f6' }}>
+    <SafeAreaView edges={['left', 'right']} style={{ flex: 1, backgroundColor: '#f6f6f6' }}>
       <View style={styles.dateNav}>
 
         {/* LEFT */}
