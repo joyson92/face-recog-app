@@ -1,7 +1,10 @@
 import Feather from '@react-native-vector-icons/feather';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import axios from 'axios';
+import Toast from 'react-native-toast-message';
+import { ActivityIndicator } from 'react-native';
 
 interface EmployeeAttendance {
   id: string;
@@ -13,27 +16,32 @@ interface EmployeeAttendance {
   isPresent?: boolean;
 }
 
-const data: EmployeeAttendance[] = [
-  {
-    id: '1',
-    name: 'Joyson Fernandes',
-    checkIn: '10:30 AM',
-    checkOut: '06:30 PM',
-    totalHrs: '8h 0m',
-    isPresent: false
-  },
-  {
-    id: '2',
-    name: 'John Doe',
-    checkIn: '09:15 AM',
-    totalHrs: '3h 20m',
-    isPresent: true
-  },
-];
+// const data: EmployeeAttendance[] = [
+//   {
+//     id: '1',
+//     name: 'Joyson Fernandes',
+//     checkIn: '10:30 AM',
+//     checkOut: '06:30 PM',
+//     totalHrs: '8h 0m',
+//     isPresent: false
+//   },
+//   {
+//     id: '2',
+//     name: 'John Doe',
+//     checkIn: '09:15 AM',
+//     totalHrs: '3h 20m',
+//     isPresent: true
+//   },
+// ];
 
 const AttendanceListScreen = () => {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [attendanceList, setAttendanceList] = useState<EmployeeAttendance[]>([]);
+  const [loading, setLoading] = useState(false);
+  const formatDateForAPI = (date: Date) => {
+    return date.toISOString().split('T')[0];
+  };
 
   const formatDisplayDate = (date: Date) => {
     const today = new Date();
@@ -64,6 +72,40 @@ const AttendanceListScreen = () => {
     newDate.setDate(newDate.getDate() + 1);
     setSelectedDate(newDate);
   };
+
+  const fetchAttendance = async (date: Date) => {
+    try {
+      setLoading(true);
+
+      const formattedDate = formatDateForAPI(date);
+
+      const response = await axios.get(
+        `https://3aq9qolzw0.execute-api.us-east-1.amazonaws.com/cpta/ta/attendance?date=${formattedDate}`
+      );
+
+      const data =
+        typeof response.data === 'string'
+          ? JSON.parse(response.data)
+          : response.data;
+
+      setAttendanceList(data || []);
+    } catch (error) {
+      setAttendanceList([]);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to fetch attendance',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAttendance(selectedDate);
+  }, [selectedDate]);
+
+  const isToday =
+    selectedDate.toDateString() === new Date().toDateString();
 
   const renderItem = ({ item }: { item: EmployeeAttendance }) => (
     <View style={styles.card}>
@@ -128,17 +170,28 @@ const AttendanceListScreen = () => {
         </Text>
 
         {/* RIGHT */}
-        <TouchableOpacity onPress={goToNextDay}>
-          <Feather name="chevron-right" size={22} color="#ff6b2d" />
+        <TouchableOpacity onPress={goToNextDay} disabled={isToday}>
+          <Feather name="chevron-right" size={22} color={isToday ? '#ccc' : '#ff6b2d'} />
         </TouchableOpacity>
 
       </View>
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ padding: 15 }}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#ff6b2d" style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={attendanceList}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ padding: 15 }}
+          refreshing={loading}
+          onRefresh={() => fetchAttendance(selectedDate)}
+          ListEmptyComponent={() => (
+            <Text style={{ textAlign: 'center', marginTop: 20 }}>
+              No attendance records
+            </Text>
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 };
