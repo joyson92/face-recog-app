@@ -28,8 +28,6 @@ import { RootStackParamList } from '../../App';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Camera'>;
 
-const navigation = useNavigation<NavigationProp>();
-
 type LocationCoords = GeoCoordinates;
 type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
 const screenHeight = Dimensions.get('window').height;
@@ -56,9 +54,9 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, onPress }) => (
 );
 
 const CameraScreen: React.FC = () => {
-
+  const navigation = useNavigation<NavigationProp>();
   const [hasPermission, setHasPermission] = useState<boolean>(false);
-  const [photo, setPhoto] = useState<string | null>(null); // base64 string
+  const [photo, setPhoto] = useState<string | null>(null);
   const [location, setLocation] = useState<LocationCoords | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -203,7 +201,7 @@ const CameraScreen: React.FC = () => {
       // 1. Get location
       const coords = await getLocation();
       setLocation(coords);
-      // 2. Capture photo (base64)
+      // 2. Capture photo (uri)
       const imageUri = await capturePhoto();
       if (!imageUri) return;
 
