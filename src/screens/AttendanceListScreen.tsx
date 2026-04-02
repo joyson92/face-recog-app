@@ -84,9 +84,9 @@ const AttendanceListScreen = () => {
       );
 
       const data =
-        typeof response.data === 'string'
-          ? JSON.parse(response.data)
-          : response.data;
+        typeof response.data?.body === 'string'
+          ? JSON.parse(response.data?.body)
+          : response.data?.body;
 
       setAttendanceList(data || []);
     } catch (error) {
