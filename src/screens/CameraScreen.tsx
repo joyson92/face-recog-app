@@ -220,6 +220,7 @@ const CameraScreen: React.FC = () => {
       formData.append('lat', coords.latitude.toString());
       formData.append('lng', coords.longitude.toString());
       formData.append('accuracy', coords.accuracy.toString());
+      formData.append('client', 'magicsal');
       // 4. Send to API multipart request
       const response = await axios.post(
         'https://3aq9qolzw0.execute-api.us-east-1.amazonaws.com/cpta/ta',

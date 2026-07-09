@@ -62,7 +62,7 @@ const AttendanceListScreen = () => {
       const formattedDate = formatDateForAPI(date);
 
       const response = await axios.get(
-        `https://3aq9qolzw0.execute-api.us-east-1.amazonaws.com/cpta/ta/attendance?date=${formattedDate}`
+        `https://3aq9qolzw0.execute-api.us-east-1.amazonaws.com/cpta/ta/attendance?date=${formattedDate}&client=magicsal`
       );
 
       const data =
